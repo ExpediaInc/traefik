@@ -10,6 +10,7 @@ import (
 )
 
 func TestStatsD(t *testing.T) {
+
 	udp.SetAddr(":18125")
 	// This is needed to make sure that UDP Listener listens for data a bit longer, otherwise it will quit after a millisecond
 	udp.Timeout = 5 * time.Second
@@ -23,15 +24,15 @@ func TestStatsD(t *testing.T) {
 
 	expected := []string{
 		// We are only validating counts, as it is nearly impossible to validate latency, since it varies every run
-		"traefik.backend.request.total:2.000000|c\n",
-		"traefik.backend.retries.total:2.000000|c\n",
-		"traefik.backend.request.duration:10000.000000|ms",
-		"traefik.config.reload.total:1.000000|c\n",
-		"traefik.config.reload.total:1.000000|c\n",
-		"traefik.entrypoint.request.total:1.000000|c\n",
-		"traefik.entrypoint.request.duration:10000.000000|ms",
-		"traefik.entrypoint.connections.open:1.000000|g\n",
-		"traefik.backend.server.up:1.000000|g\n",
+		"traefik.test-proxy." + GetHostName() + ".backend.request.total:2.000000|c\n",
+		"traefik.test-proxy." + GetHostName() + ".backend.retries.total:2.000000|c\n",
+		"traefik.test-proxy." + GetHostName() + ".backend.request.duration:10000.000000|ms",
+		"traefik.test-proxy." + GetHostName() + ".config.reload.total:1.000000|c\n",
+		"traefik.test-proxy." + GetHostName() + ".config.reload.total:1.000000|c\n",
+		"traefik.test-proxy." + GetHostName() + ".entrypoint.request.total:1.000000|c\n",
+		"traefik.test-proxy." + GetHostName() + ".entrypoint.request.duration:10000.000000|ms",
+		"traefik.test-proxy." + GetHostName() + ".entrypoint.connections.open:1.000000|g\n",
+		"traefik.test-proxy." + GetHostName() + ".backend.server.up:1.000000|g\n",
 	}
 
 	udp.ShouldReceiveAll(t, expected, func() {
