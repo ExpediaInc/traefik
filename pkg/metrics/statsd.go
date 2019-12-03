@@ -1,6 +1,8 @@
 package metrics
 
 import (
+    "os"
+    "string"
 	"context"
 	"time"
 
@@ -11,7 +13,7 @@ import (
 	"github.com/go-kit/kit/metrics/statsd"
 )
 
-var statsdClient = statsd.New("traefik.", kitlog.LoggerFunc(func(keyvals ...interface{}) error {
+var statsdClient = statsd.New(getMetricsPrefix(), kitlog.LoggerFunc(func(keyvals ...interface{}) error {
 	log.WithoutContext().WithField(log.MetricsProviderName, "statsd").Info(keyvals)
 	return nil
 }))
@@ -87,4 +89,31 @@ func StopStatsd() {
 		statsdTicker.Stop()
 	}
 	statsdTicker = nil
+}
+
+func GetAppName() string {
+	appName := os.Getenv("APP_NAME")
+	if appName == ""  {
+		os.Setenv("APP_NAME",  "test-proxy")
+		return os.Getenv("APP_NAME")
+	}
+	return appName
+}
+
+func GetHostName() string {
+	hostName, err := os.Hostname()
+	if err != nil  {
+		return "no-host-available"
+	}
+	return hostName
+}
+
+func getMetricsPrefix() string {
+	var sb strings.Builder
+	sb.WriteString("traefik.")
+	sb.WriteString(GetAppName())
+	sb.WriteString(".")
+	sb.WriteString(GetHostName())
+	sb.WriteString(".")
+	return sb.String()
 }
