@@ -1,8 +1,8 @@
 package metrics
 
 import (
-    "os"
-    "string"
+	"os"
+	"strings"
 	"context"
 	"time"
 
