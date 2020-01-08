@@ -40,7 +40,15 @@ func NewBackendMetricsMiddleware(registry metrics.Registry, backendName string) 
 	}
 }
 
-// NewBackendMetricsMiddleware creates a new metrics middleware for a Backend.
+func NewEntryPointMetricsMiddlewareWithLabels(registry metrics.Registry, entryPointName string) negroni.Handler {
+	return &metricsMiddleware{
+		reqsCounter:          registry.EntrypointReqsCounterWithLabel([]string{entryPointName}),
+		reqDurationHistogram: registry.EntrypointReqDurationHistogramWithLabel([]string{entryPointName}),
+		openConnsGauge:       registry.EntrypointOpenConnsGaugeWithLabel([]string{entryPointName}),
+		baseLabels:           []string{"entrypoint", entryPointName},
+	}
+}
+
 func NewBackendMetricsMiddlewareWithLabels(registry metrics.Registry, backendName string) negroni.Handler {
 	return &metricsMiddleware{
 		reqsCounter:          registry.BackendReqsCounterWithLabel([]string{backendName}),

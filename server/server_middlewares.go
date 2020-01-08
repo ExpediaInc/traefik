@@ -153,7 +153,11 @@ func (s *Server) buildServerEntryPointMiddlewares(serverEntryPointName string, s
 	}
 
 	if s.metricsRegistry.IsEnabled() {
-		serverMiddlewares = append(serverMiddlewares, middlewares.NewEntryPointMetricsMiddleware(s.metricsRegistry, serverEntryPointName))
+		if s.metricsRegistry.IsStatsd() {
+			serverMiddlewares = append(serverMiddlewares, middlewares.NewEntryPointMetricsMiddlewareWithLabels(s.metricsRegistry, serverEntryPointName))
+		} else {
+			serverMiddlewares = append(serverMiddlewares, middlewares.NewEntryPointMetricsMiddleware(s.metricsRegistry, serverEntryPointName))
+		}
 	}
 
 	if s.globalConfiguration.API != nil {

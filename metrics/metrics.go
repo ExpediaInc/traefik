@@ -31,6 +31,11 @@ type Registry interface {
 	BackendReqsCounterWithLabel(labelValues []string) metrics.Counter
 	BackendReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram
 	BackendOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge
+
+	EntrypointReqsCounterWithLabel(labelValues []string) metrics.Counter
+	EntrypointReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram
+	EntrypointOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge
+
 	IsStatsd() bool
 }
 

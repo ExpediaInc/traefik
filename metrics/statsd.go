@@ -146,6 +146,36 @@ func (r *standardRegistry) BackendOpenConnsGaugeWithLabel(labelValues []string) 
 	return dynamicGauge
 }
 
+func (r *standardRegistry) EntrypointReqsCounterWithLabel(labelValues []string) metrics.Counter {
+	counterDynamicName := statsdEntrypointReqsName + strings.Join(labelValues, "." )
+	if counter, found := statsdDynamicCache.Get(counterDynamicName); found {
+		return counter.(metrics.Counter)
+	}
+	dynamicCounter := statsdClient.NewCounter(counterDynamicName , 1.0)
+	statsdDynamicCache.Set(counterDynamicName, dynamicCounter, cache.NoExpiration)
+	return dynamicCounter
+}
+
+func (r *standardRegistry) EntrypointReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram {
+	histogramDynamicName := statsdEntrypointReqDurationName + strings.Join(labelValues, "." )
+	if histogram, found := statsdDynamicCache.Get(histogramDynamicName); found {
+		return histogram.(metrics.Histogram)
+	}
+	dynamicHistogram := statsdClient.NewTiming(histogramDynamicName , 1.0)
+	statsdDynamicCache.Set(histogramDynamicName, dynamicHistogram, cache.NoExpiration)
+	return dynamicHistogram
+}
+
+func (r *standardRegistry) EntrypointOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge {
+	openConnsGaugeDynamicName := statsdEntrypointOpenConnsName + strings.Join(labelValues, "." )
+	if gauge, found := statsdDynamicCache.Get(openConnsGaugeDynamicName); found {
+		return gauge.(metrics.Gauge)
+	}
+	dynamicGauge := statsdClient.NewGauge(openConnsGaugeDynamicName)
+	statsdDynamicCache.Set(openConnsGaugeDynamicName, dynamicGauge, cache.NoExpiration)
+	return dynamicGauge
+}
+
 func (r *standardRegistry) IsStatsd() bool {
 	return true
 }
