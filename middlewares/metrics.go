@@ -40,6 +40,16 @@ func NewBackendMetricsMiddleware(registry metrics.Registry, backendName string) 
 	}
 }
 
+// NewBackendMetricsMiddleware creates a new metrics middleware for a Backend.
+func NewBackendMetricsMiddlewareWithLabels(registry metrics.Registry, backendName string) negroni.Handler {
+	return &metricsMiddleware{
+		reqsCounter:          registry.BackendReqsCounterWithLabel([]string{backendName}),
+		reqDurationHistogram: registry.BackendReqDurationHistogramWithLabel([]string{backendName}),
+		openConnsGauge:       registry.BackendOpenConnsGaugeWithLabel([]string{backendName}),
+		baseLabels:           []string{"backend", backendName},
+	}
+}
+
 type metricsMiddleware struct {
 	// Important: Since this int64 field is using sync/atomic, it has to be at the top of the struct due to a bug on 32-bit platform
 	// See: https://golang.org/pkg/sync/atomic/ for more information

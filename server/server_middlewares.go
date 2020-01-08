@@ -45,7 +45,13 @@ func (s *Server) buildMiddlewares(frontendName string, frontend *types.Frontend,
 
 	// Metrics
 	if s.metricsRegistry.IsEnabled() {
-		handler := middlewares.NewBackendMetricsMiddleware(s.metricsRegistry, frontend.Backend)
+		var handler negroni.Handler
+		if s.metricsRegistry.IsStatsd() {
+			handler = middlewares.NewBackendMetricsMiddlewareWithLabels(s.metricsRegistry, frontend.Backend)
+		} else {
+			handler = middlewares.NewBackendMetricsMiddleware(s.metricsRegistry, frontend.Backend)
+		}
+
 		middle = append(middle, handler)
 	}
 
