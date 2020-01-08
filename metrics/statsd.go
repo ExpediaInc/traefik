@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"github.com/go-kit/kit/metrics"
 	"os"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/containous/traefik/types"
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics/statsd"
+	"github.com/patrickmn/go-cache"
 )
 
 var statsdClient = statsd.New(getMetricsPrefix(), kitlog.LoggerFunc(func(keyvals ...interface{}) error {
@@ -18,6 +20,7 @@ var statsdClient = statsd.New(getMetricsPrefix(), kitlog.LoggerFunc(func(keyvals
 }))
 
 var statsdTicker *time.Ticker
+var statsdDynamicCache = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 const (
 	statsdMetricsBackendReqsName      = "backend.request.total"
@@ -111,4 +114,68 @@ func getMetricsPrefix() string {
 	sb.WriteString(GetHostName())
 	sb.WriteString(".")
 	return sb.String()
+}
+
+func (r *standardRegistry) BackendReqsCounterWithLabel(labelValues []string) metrics.Counter {
+	counterDynamicName := statsdMetricsBackendReqsName + strings.Join(labelValues, "." )
+	if counter, found := statsdDynamicCache.Get(counterDynamicName); found {
+		return counter.(metrics.Counter)
+	}
+	dynamicCounter := statsdClient.NewCounter(counterDynamicName , 1.0)
+	statsdDynamicCache.Set(counterDynamicName, dynamicCounter, cache.NoExpiration)
+	return dynamicCounter
+}
+
+func (r *standardRegistry) BackendReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram {
+	histogramDynamicName := statsdMetricsBackendLatencyName + strings.Join(labelValues, "." )
+	if histogram, found := statsdDynamicCache.Get(histogramDynamicName); found {
+		return histogram.(metrics.Histogram)
+	}
+	dynamicHistogram := statsdClient.NewTiming(histogramDynamicName , 1.0)
+	statsdDynamicCache.Set(histogramDynamicName, dynamicHistogram, cache.NoExpiration)
+	return dynamicHistogram
+}
+
+func (r *standardRegistry) BackendOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge {
+	openConnsGaugeDynamicName := statsdOpenConnsName + strings.Join(labelValues, "." )
+	if gauge, found := statsdDynamicCache.Get(openConnsGaugeDynamicName); found {
+		return gauge.(metrics.Gauge)
+	}
+	dynamicGauge := statsdClient.NewGauge(openConnsGaugeDynamicName)
+	statsdDynamicCache.Set(openConnsGaugeDynamicName, dynamicGauge, cache.NoExpiration)
+	return dynamicGauge
+}
+
+func (r *standardRegistry) EntrypointReqsCounterWithLabel(labelValues []string) metrics.Counter {
+	counterDynamicName := statsdEntrypointReqsName + strings.Join(labelValues, "." )
+	if counter, found := statsdDynamicCache.Get(counterDynamicName); found {
+		return counter.(metrics.Counter)
+	}
+	dynamicCounter := statsdClient.NewCounter(counterDynamicName , 1.0)
+	statsdDynamicCache.Set(counterDynamicName, dynamicCounter, cache.NoExpiration)
+	return dynamicCounter
+}
+
+func (r *standardRegistry) EntrypointReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram {
+	histogramDynamicName := statsdEntrypointReqDurationName + strings.Join(labelValues, "." )
+	if histogram, found := statsdDynamicCache.Get(histogramDynamicName); found {
+		return histogram.(metrics.Histogram)
+	}
+	dynamicHistogram := statsdClient.NewTiming(histogramDynamicName , 1.0)
+	statsdDynamicCache.Set(histogramDynamicName, dynamicHistogram, cache.NoExpiration)
+	return dynamicHistogram
+}
+
+func (r *standardRegistry) EntrypointOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge {
+	openConnsGaugeDynamicName := statsdEntrypointOpenConnsName + strings.Join(labelValues, "." )
+	if gauge, found := statsdDynamicCache.Get(openConnsGaugeDynamicName); found {
+		return gauge.(metrics.Gauge)
+	}
+	dynamicGauge := statsdClient.NewGauge(openConnsGaugeDynamicName)
+	statsdDynamicCache.Set(openConnsGaugeDynamicName, dynamicGauge, cache.NoExpiration)
+	return dynamicGauge
+}
+
+func (r *standardRegistry) IsStatsd() bool {
+	return true
 }

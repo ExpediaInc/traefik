@@ -27,6 +27,16 @@ type Registry interface {
 	BackendOpenConnsGauge() metrics.Gauge
 	BackendRetriesCounter() metrics.Counter
 	BackendServerUpGauge() metrics.Gauge
+
+	BackendReqsCounterWithLabel(labelValues []string) metrics.Counter
+	BackendReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram
+	BackendOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge
+
+	EntrypointReqsCounterWithLabel(labelValues []string) metrics.Counter
+	EntrypointReqDurationHistogramWithLabel(labelValues []string) metrics.Histogram
+	EntrypointOpenConnsGaugeWithLabel(labelValues []string) metrics.Gauge
+
+	IsStatsd() bool
 }
 
 // NewVoidRegistry is a noop implementation of metrics.Registry.
@@ -109,19 +119,22 @@ func NewMultiRegistry(registries []Registry) Registry {
 }
 
 type standardRegistry struct {
-	enabled                        bool
-	configReloadsCounter           metrics.Counter
-	configReloadsFailureCounter    metrics.Counter
-	lastConfigReloadSuccessGauge   metrics.Gauge
-	lastConfigReloadFailureGauge   metrics.Gauge
-	entrypointReqsCounter          metrics.Counter
-	entrypointReqDurationHistogram metrics.Histogram
-	entrypointOpenConnsGauge       metrics.Gauge
-	backendReqsCounter             metrics.Counter
-	backendReqDurationHistogram    metrics.Histogram
-	backendOpenConnsGauge          metrics.Gauge
-	backendRetriesCounter          metrics.Counter
-	backendServerUpGauge           metrics.Gauge
+	enabled                        			bool
+	configReloadsCounter           			metrics.Counter
+	configReloadsFailureCounter    			metrics.Counter
+	lastConfigReloadSuccessGauge   			metrics.Gauge
+	lastConfigReloadFailureGauge   			metrics.Gauge
+	entrypointReqsCounter          			metrics.Counter
+	entrypointReqDurationHistogram 			metrics.Histogram
+	entrypointOpenConnsGauge       			metrics.Gauge
+	backendReqsCounter             			metrics.Counter
+	backendReqDurationHistogram    			metrics.Histogram
+	backendOpenConnsGauge          			metrics.Gauge
+	backendRetriesCounter          			metrics.Counter
+	backendServerUpGauge           			metrics.Gauge
+	backendReqsCounterWithLabel    			metrics.Counter
+	backendReqDurationHistogramWithLabel 	metrics.Histogram
+	backendOpenConnsGaugeWithLabel       	metrics.Gauge
 }
 
 func (r *standardRegistry) IsEnabled() bool {
